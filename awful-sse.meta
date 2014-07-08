@@ -1,0 +1,9 @@
+;; -*- Scheme -*-
+
+((synopsis "Server-Sent Events module for Awful")
+ (author "Arthur Maciel")
+ (category web)
+ (license "BSD")
+ (depends awful spiffy intarweb)
+ ;(test-depends test)
+ )

@@ -1,0 +1,182 @@
+[[tags: egg]]
+
+== awful-sse
+
+[[toc:]]
+
+=== Description
+
+A CHICKEN Scheme module for Awful web framework that provides Server-Sent Events according to [[http://dev.w3.org/html5/eventsource/]] specification.
+
+=== Author
+
+[[/users/arthurmaciel|Arthur Maciel]]
+
+=== Requirements
+
+Requires [[awful]], [[spiffy]] and [[intarweb]] eggs.
+
+=== Documentation
+
+From Wikipedia:
+"Server-sent events (SSE) is a technology for where a browser gets automatic updates from a server via HTTP connection. The Server-Sent Events EventSource API is standardized as part of HTML5 by the W3C. [It] is a standard describing how servers can initiate data transmission towards clients once an initial client connection has been established. They are commonly used to send message updates or continuous data streams to a browser client and designed to enhance native, cross-browser streaming through a JavaScript API called EventSource, through which a client requests a particular URL in order to receive an event stream." ([[http://en.wikipedia.org/wiki/Server-sent_events]])
+
+'''Note''': if you need a full-duplex communication channel over a single TCP connection, please consider using [[http://en.wikipedia.org/wiki/WebSocket|Websockets]].
+
+To see the magic happening with SSE, try the [[#examples|examples]].
+
+==== Procedures
+
+<procedure>(define-page/sse path contents sse-path sse-proc #!key css title doctype headers charset no-ajax no-template no-session no-db vhost-root-path no-javascript-compression use-ajax (method '(GET HEAD)) (use-sxml not-set) use-session)</procedure>
+Define two awful pages: 
+* The "client page" that is accessed via {{path}} and presents {{contents}}. It is a "normal" awful page and should be used as the link presented to the client;
+* The "server page" that should be accessed by the "client page" via {{sse-path}}using the appropiate Javascript code (see [[#examples|Examples]] section). This page will run {{sse-proc}}. 
+
+'''Note''' that {{sse-proc}} should keep the connection open, so usually it is an infinite loop. In order to avoid CPU consumption this loop should sleep some seconds and, for that, be sure to use SRFI-18 {{[[http://api.call-cc.org/doc/srfi-18/thread-sleep!|thread-sleep!]]}} instead of blocking {{sleep}} procedure.
+
+<procedure>(send-sse-data data #!key event id)</procedure>
+Send data from server to the client using the current HTTP connection. {{event}} and {{id}} keywords are used to set the data type and unique id respectively. When there is no {{event}} field set, the client understands the data type is "message". {{id}} is also optional.
+
+<procedure>(send-sse-retry milliseconds)</procedure>
+Send the "retry: {{milliseconds}}" message to define the reconnection timeout for the client.
+
+==== Examples
+
+===== Time server
+
+<enscript highlight="scheme">
+;; Run with {{awful example1.scm}}.
+;; On web browser open [[http://localhost:8080/client]] and watch the 
+;; new time coming each second from the server.
+(use awful-sse awful spiffy posix srfi-18)
+
+(define (sse-proc)
+  (let loop ()
+    (send-sse-data (seconds->string) id: (random 10) event: "message")
+    (thread-sleep! 1)
+    (loop)))
+
+(define-page/sse "/client" 
+  (lambda ()
+    (add-javascript 
+     "var source = new EventSource('/sse');
+      source.onmessage = function (event) {
+          display = document.getElementById('display');
+          display.innerHTML = event.data;
+      };")
+
+    (add-css "#display { color: blue; }")
+
+    `(div "Current time: "
+          (span (@ (id "display")) "")))
+  "/sse"
+  sse-proc
+  use-sxml: #t)
+
+=>  
+Current time: Mon Jul 7 22:12:28 2014
+Current time: Mon Jul 7 22:12:29 2014
+Current time: Mon Jul 7 22:12:30 2014
+.
+.
+</enscript>
+
+==== SSE and Ajax
+
+<enscript highlight="scheme">
+;; Run with {{awful example2.scm}}.
+;; Open two web browsers and point both to [[http://localhost:8080/client]].
+;; Try clicking on the blue and the red div and see them changing their
+;; boolean values on BOTH browsers.
+(use awful-sse awful spiffy json posix srfi-18)
+
+;; Global variables are not good practice, but will suffice for the moment.
+(define one #t)
+(define two #f)
+
+(define (swap1!)
+  (set! one (not one)))
+(define (swap2!)
+  (set! two (not two)))
+
+(define (prepare-json one two)
+  (with-output-to-string
+    (lambda ()
+      (json-write (list->vector `(("one" . ,one) ("two" . ,two)))))))
+
+(define (sse-proc)
+  (let loop ()
+    (send-sse-data (prepare-json one two))
+    (thread-sleep! 1)
+    (loop)))
+
+(define-page/sse "/client"
+  (lambda ()
+    (add-javascript
+     "var source = new EventSource('/sse');
+      source.addEventListener('message', function(e) {
+          var data = JSON.parse(e.data);
+          document.getElementById('one').innerHTML = data.one;
+          document.getElementById('two').innerHTML = data.two;
+      }, false);")
+
+    (add-css "div #one, #two { padding: 1em; margin: 1em; border-width: 1px; border-style: solid; }")
+    
+    (ajax "one" 'one 'click
+          (lambda ()
+  	    (swap1!)))
+    (ajax "two" 'two 'click
+          (lambda ()
+            (swap2!)))
+    
+    `((div (div (@ (id "one")
+                   (style "border-color: blue;"))
+                "")
+           (div (@ (id "two")
+                   (style "border-color: red;"))
+		""))))
+  "/sse"
+  sse-proc
+  use-sxml: #t
+  use-ajax: #t)
+</enscript>
+
+Do you have any useful SSE example? Please share it here!
+
+=== Changelog
+
+* 0.1 Initial version
+
+=== License
+
+  Copyright (c) 2014, Arthur Maciel
+  All rights reserved.
+  
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are
+  met:
+  
+  Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer.
+  
+  Redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in the
+  documentation and/or other materials provided with the distribution.
+  
+  Neither the name of the author nor the names of its contributors may
+  be used to endorse or promote products derived from this software
+  without specific prior written permission.
+  
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+  COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+  STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+  OF THE POSSIBILITY OF SUCH DAMAGE.
+  
