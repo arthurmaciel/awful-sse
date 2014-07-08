@@ -31,39 +31,41 @@
  (import scheme chicken data-structures extras posix)
  (use awful spiffy intarweb)
  
- (define (add-sse-resource! path proc vhost-root-path redirect-path)
-   (add-resource! path
+ (define (add-sse-resource! sse-path sse-proc vhost-root-path client-path)
+   (add-resource! sse-path
 		  (or vhost-root-path (root-path))
 		  (lambda (#!optional given-path)
 		    (let ((accept (header-values 'accept
 						 (request-headers (current-request)))))
+		      ;; If client 'EventSource' JS code requested SSE page...
 		      (if (memq 'text/event-stream accept)
-			  (lambda ()
+			  ;; ...complete handshake and keep connection alive with 'sse-proc'.
+                          (lambda ()
 			    (with-headers '((content-type text/event-stream)
 					    (cache-control no-cache)
 					    (connection keep-alive))
 					  (lambda ()
 					    (write-logged-response)
-					    (proc))))
-			  (redirect-to redirect-path)))) 
+					    (sse-proc))))
+			  (redirect-to client-path)))) 
 		  'GET))
  
+ (define (define-page/sse path contents sse-path sse-proc #!rest rest)
+   (apply define-page (append (list path contents) rest))
+   (add-sse-resource! sse-path sse-proc (get-keyword vhost-root-path: rest) path))
+
  (define (write-body data)
    (display data (response-port (current-response)))
    (finish-response-body (current-response)))
  
  (define (send-sse-data data #!key event id)
    (let ((msg (conc (if id (conc "id: " id "\n") "")
-		    (if event (conc "event: " event "\n") "")
-		    "data: " data "\n\n")))
+                    (if event (conc "event: " event "\n") "")
+                    "data: " data "\n\n")))
      (write-body msg)))
  
  (define (send-sse-retry retry)
    (write-body (conc "retry: " retry "\n\n")))
  
- (define (define-page/sse path contents sse-path sse-proc #!rest rest)
-   (apply define-page (append (list path contents) rest))
-   (add-sse-resource! sse-path sse-proc (get-keyword vhost-root-path: rest) path))
-
 ) ; End of module
 

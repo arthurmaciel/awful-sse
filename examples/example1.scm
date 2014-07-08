@@ -1,5 +1,5 @@
-;; Run with {{awful example1.scm}}.
-;; On web browser open [[http://localhost:8080/client]] and watch the 
+;; Run with 'awful example1.scm'.
+;; On web browser open http://localhost:8080/client and watch the 
 ;; new time coming each second from the server.
 (use awful-sse awful spiffy posix srfi-18)
 
