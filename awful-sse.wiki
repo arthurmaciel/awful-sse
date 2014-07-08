@@ -30,9 +30,9 @@ To see the magic happening with SSE, try the [[#examples|examples]].
 <procedure>(define-page/sse path contents sse-path sse-proc #!key css title doctype headers charset no-ajax no-template no-session no-db vhost-root-path no-javascript-compression use-ajax (method '(GET HEAD)) (use-sxml not-set) use-session)</procedure>
 Define two awful pages: 
 * The "client page" that is accessed via {{path}} and presents {{contents}}. It is a "normal" awful page and should be used as the link presented to the client;
-* The "server page" that should be accessed by the "client page" via {{sse-path}}using the appropiate Javascript code (see [[#examples|Examples]] section). This page will run {{sse-proc}}. 
+* The "server page" that should be accessed by the "client page" via {{sse-path}} using the appropiate Javascript code (see [[#examples|Examples]] section). This page will run {{sse-proc}}. 
 
-'''Note''' that {{sse-proc}} should keep the connection open, so usually it is an infinite loop. In order to avoid CPU consumption this loop should sleep some seconds and, for that, be sure to use SRFI-18 {{[[http://api.call-cc.org/doc/srfi-18/thread-sleep!|thread-sleep!]]}} instead of blocking {{sleep}} procedure.
+'''Note''' that {{sse-proc}} should keep the connection open, so usually it is an infinite loop. In order to avoid CPU consumption this loop should sleep some seconds and, for that, be sure to use SRFI-18 [[http://api.call-cc.org/doc/srfi-18/thread-sleep!|thread-sleep!]] instead of blocking {{sleep}} procedure.
 
 <procedure>(send-sse-data data #!key event id)</procedure>
 Send data from server to the client using the current HTTP connection. {{event}} and {{id}} keywords are used to set the data type and unique id respectively. When there is no {{event}} field set, the client understands the data type is "message". {{id}} is also optional.
@@ -44,10 +44,10 @@ Send the "retry: {{milliseconds}}" message to define the reconnection timeout fo
 
 ===== Time server
 
+Run with {{awful example1.scm}}.
+On web browser open [[http://localhost:8080/client]] and watch the new time coming each second from the server.
+
 <enscript highlight="scheme">
-;; Run with {{awful example1.scm}}.
-;; On web browser open [[http://localhost:8080/client]] and watch the 
-;; new time coming each second from the server.
 (use awful-sse awful spiffy posix srfi-18)
 
 (define (sse-proc)
@@ -81,16 +81,16 @@ Current time: Mon Jul 7 22:12:30 2014
 .
 </enscript>
 
-==== SSE and Ajax
+===== SSE and Ajax
+
+Run with {{awful example2.scm}}.
+Open two web browsers and point both to [[http://localhost:8080/client]].
+Try clicking on the blue and the red div and see them changing their boolean values on *both* browsers.
 
 <enscript highlight="scheme">
-;; Run with {{awful example2.scm}}.
-;; Open two web browsers and point both to [[http://localhost:8080/client]].
-;; Try clicking on the blue and the red div and see them changing their
-;; boolean values on BOTH browsers.
 (use awful-sse awful spiffy json posix srfi-18)
 
-;; Global variables are not good practice, but will suffice for the moment.
+;; Instead of global variables we could use database query for example.
 (define one #t)
 (define two #f)
 
@@ -125,6 +125,7 @@ Current time: Mon Jul 7 22:12:30 2014
     (ajax "one" 'one 'click
           (lambda ()
   	    (swap1!)))
+
     (ajax "two" 'two 'click
           (lambda ()
             (swap2!)))
@@ -145,6 +146,7 @@ Do you have any useful SSE example? Please share it here!
 
 === Changelog
 
+* 0.2 Added tests
 * 0.1 Initial version
 
 === License
@@ -179,4 +181,3 @@ Do you have any useful SSE example? Please share it here!
   STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
   OF THE POSSIBILITY OF SUCH DAMAGE.
-  

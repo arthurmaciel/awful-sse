@@ -1,3 +1,4 @@
 (repo git "git://github.com/arthurmaciel/awful-sse.git")
 (uri targz "https://codeload.github.com/arthurmaciel/{egg-name}/tar.gz/{egg-release}")
 (release "0.1")
+(release "0.2")
