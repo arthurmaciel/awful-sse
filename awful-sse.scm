@@ -66,6 +66,6 @@
  
  (define (send-sse-retry retry)
    (write-body (conc "retry: " retry "\n\n")))
- 
+
 ) ; End of module
 
