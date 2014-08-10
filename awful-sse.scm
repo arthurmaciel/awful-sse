@@ -37,9 +37,9 @@
 		  (lambda (#!optional given-path)
 		    (let ((accept (header-values 'accept
 						 (request-headers (current-request)))))
-		      ;; If client 'EventSource' JS code requested SSE page...
+		      ;; If client's EventSource (JS code) requested SSE page...
 		      (if (memq 'text/event-stream accept)
-			  ;; ...complete handshake and keep connection alive with 'sse-proc'.
+			  ;;...complete handshake & keep connection alive with 'sse-proc'.
                           (lambda ()
 			    (with-headers '((content-type text/event-stream)
 					    (cache-control no-cache)
