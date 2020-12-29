@@ -146,12 +146,13 @@ Do you have any useful SSE example? Please share it here!
 
 === Changelog
 
+* 0.3 Ported to Chicken 5
 * 0.2 Added tests
 * 0.1 Initial version
 
 === License
 
-  Copyright (c) 2014, Arthur Maciel
+  Copyright (c) 2014, Arthur Maciel; 2020, Daniel Ziltener
   All rights reserved.
   
   Redistribution and use in source and binary forms, with or without

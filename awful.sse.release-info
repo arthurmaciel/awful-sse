@@ -1,4 +1,5 @@
-(repo git "git://github.com/arthurmaciel/awful-sse.git")
-(uri targz "https://codeload.github.com/arthurmaciel/{egg-name}/tar.gz/{egg-release}")
+(repo git "https:///gitea.lyrion.ch/zilti/awful-sse.git")
+(uri targz "https://gitea.lyrion.ch/zilti/awful-sse/archive/{egg-release}.tar.gz")
 (release "0.1")
 (release "0.2")
+(release "0.3")
