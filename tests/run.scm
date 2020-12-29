@@ -1,4 +1,6 @@
-(use awful http-client intarweb uri-common server-test test)
+(import (chicken base) 
+        (chicken io)
+        awful http-client intarweb uri-common server-test test)
 
 (awful-apps (list "client.scm"))
 

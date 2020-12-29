@@ -1,9 +1,0 @@
-;; -*- Scheme -*-
-
-(compile -s -O2 awful-sse.scm -j awful-sse)
-(compile -s -O2 awful-sse.import.scm)
-
-(install-extension
-  'awful-sse
-  '("awful-sse.so" "awful-sse.import.so")
-  '((version "0.1")))
