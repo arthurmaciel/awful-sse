@@ -1,0 +1,3 @@
+(repo git "https:///gitea.lyrion.ch/zilti/awful-sse.git")
+(uri targz "https://gitea.lyrion.ch/zilti/awful-sse/archive/{egg-release}.tar.gz")
+(release "0.3")

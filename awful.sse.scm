@@ -24,32 +24,37 @@
 ;; OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 ;; IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(module awful-sse
- 
+(module (awful sse)
+
  (define-page/sse send-sse-data send-sse-retry)
- 
- (import scheme chicken data-structures extras posix)
- (use awful spiffy intarweb)
- 
+
+ (import scheme
+         (chicken base)
+         (chicken keyword)
+         (chicken string)
+         ;;data-structures extras posix
+         awful spiffy intarweb)
+
  (define (add-sse-resource! sse-path sse-proc vhost-root-path client-path)
    (add-resource! sse-path
-		  (or vhost-root-path (root-path))
-		  (lambda (#!optional given-path)
-		    (let ((accept (header-values 'accept
-						 (request-headers (current-request)))))
-		      ;; If client's EventSource (JS code) requested SSE page...
-		      (if (memq 'text/event-stream accept)
-			  ;;...complete handshake & keep connection alive with 'sse-proc'.
+		              (or vhost-root-path (root-path))
+		              (lambda (#!optional given-path)
+		                (let ((accept (header-values 'accept
+						                                     (request-headers (current-request)))))
+		                  ;; If client's EventSource (JS code) requested SSE page...
+		                  (if (memq 'text/event-stream accept)
+			                    ;;...complete handshake & keep connection alive with 'sse-proc'.
                           (lambda ()
-			    (with-headers '((content-type text/event-stream)
-					    (cache-control no-cache)
-					    (connection keep-alive))
-					  (lambda ()
-					    (write-logged-response)
-					    (sse-proc))))
-			  (redirect-to client-path)))) 
-		  'GET))
- 
+			                      (with-headers '((content-type text/event-stream)
+					                                  (cache-control no-cache)
+					                                  (connection keep-alive))
+					                                (lambda ()
+					                                  (write-logged-response)
+					                                  (sse-proc))))
+			                    (redirect-to client-path))))
+		              'GET
+		              #f))
+
  (define (define-page/sse path contents sse-path sse-proc #!rest rest)
    (apply define-page (append (list path contents) rest))
    (add-sse-resource! sse-path sse-proc (get-keyword vhost-root-path: rest) path))
@@ -57,13 +62,13 @@
  (define (write-body data)
    (display data (response-port (current-response)))
    (finish-response-body (current-response)))
- 
+
  (define (send-sse-data data #!key event id)
    (let ((msg (conc (if id (conc "id: " id "\n") "")
                     (if event (conc "event: " event "\n") "")
                     "data: " data "\n\n")))
      (write-body msg)))
- 
+
  (define (send-sse-retry retry)
    (write-body (conc "retry: " retry "\n\n")))
 
