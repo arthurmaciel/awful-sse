@@ -1,4 +1,4 @@
-(import (awful sse))
+(use awful-sse)
 
 (define (sse-proc)
   (send-sse-data "sse"))

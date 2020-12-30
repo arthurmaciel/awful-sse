@@ -1,9 +1,0 @@
-;; -*- mode: scheme -*-
-((author "Arthur Maciel")
- (synopsis "Server-Sent Events module for Awful")
- (category web)
- (license "BSD")
- (dependencies awful spiffy intarweb)
- (test-dependencies test server-test uri-common http-client)
- (components
-  (extension awful.sse)))

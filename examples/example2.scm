@@ -2,7 +2,7 @@
 ;; Open two web browsers and point both to http://localhost:8080/client.
 ;; Try clicking on the blue and the red divs and see them changing their
 ;; boolean values on BOTH browsers.
-(import (chicken port) (awful sse) awful spiffy json srfi-18)
+(use awful-sse awful spiffy json posix srfi-18)
 
 ; Global variables are not good practice, but will suffice for the moment.
 (define one #t)

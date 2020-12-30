@@ -1,11 +1,11 @@
 ;; Run with 'awful example1.scm'.
 ;; On web browser open http://localhost:8080/client and watch the 
 ;; new time coming each second from the server.
-(import (chicken time posix) (chicken random) (awful sse) awful spiffy srfi-18)
+(use awful-sse awful spiffy posix srfi-18)
 
 (define (sse-proc)
   (let loop ()
-    (send-sse-data (seconds->string) id: (pseudo-random-integer 10) event: "message")
+    (send-sse-data (seconds->string) id: (random 10) event: "message")
     (thread-sleep! 1)
     (loop)))
 
